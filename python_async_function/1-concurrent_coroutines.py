@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
-"""Module that defines async comprehension coroutine"""
-
+""" Coroutine at the same time witha sync """
+import asyncio
+import random
 from typing import List
 
-async_generator = __import__('0-async_generator').async_generator
+
+wait_random = __import__('0-basic_async_syntax').wait_random
 
 
-async def async_comprehension() -> List[float]:
+async def wait_n(n: int = 0, max_delay: int = 10) -> List[float]:
     """
-    Collect 10 random numbers using an async comprehension.
+        Args:
+            max_delay: max wait
+            n: spawn function
 
-    This coroutine uses async comprehension to gather values
-    from async_generator and returns them as a list.
-
-    Returns:
-        List[float]: list of 10 random numbers
+        Return:
+            float time random
     """
-    return [i async for i in async_generator()]
+    delays: List[float] = []
+    tasks: List = []
+
+    for _ in range(n):
+        tasks.append(wait_random(max_delay))
+
+    for task in asyncio.as_completed((tasks)):
+        delay = await task
+        delays.append(delay)
+
+    return delays
