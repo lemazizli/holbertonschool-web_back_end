@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""
-Async Generator module
-"""
-
-
+""" Basic syntax await async """
 import asyncio
 import random
-from typing import Generator
 
 
-async def async_generator() -> Generator[float, None, None]:
+async def wait_random(max_delay: int = 10) -> float:
     """
-    Loop 10 times, wait 1 second each time, and yield a random number.
+        Args:
+            max_delay: max wait
+
+        Return:
+            float time random
     """
-    for _ in range(10):
-        await asyncio.sleep(1)
-        yield random.uniform(0, 10)
+    delay: float = random.uniform(0, max_delay)
+    await asyncio.sleep(delay)
+
+    return delay
