@@ -1,27 +1,49 @@
 const http = require('http');
-const countStudents = require('./2-read_file');
+const fs = require('fs');
 
-const dbPath = process.argv[2];
+function countStudents(path) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+      if (err) return reject(Error('Cannot load the database'));
 
-const app = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
+      const lines = data.split('\n').filter((l) => l.trim() !== '');
+      const fields = {};
 
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        const field = parts[3];
+        const firstname = parts[0];
+
+        if (!fields[field]) fields[field] = [];
+        fields[field].push(firstname);
+      }
+
+      let output = `Number of students: ${lines.length - 1}`;
+      for (const field of Object.keys(fields).sort()) {
+        output += `\nNumber of students in ${field}: ${fields[field].length}. List: ${fields[field].join(', ')}`;
+      }
+
+      resolve(output);
+    });
+  });
+}
+
+const app = http.createServer(async (req, res) => {
   if (req.url === '/') {
+    res.writeHead(200);
     res.end('Hello Holberton School!');
   } else if (req.url === '/students') {
+    const db = process.argv[2];
+
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.write('This is the list of our students\n');
+
     try {
-      // Test skripti konsol çıxışını tutmaq üçün console.log-u override edir
-      // Ona görə də birbaşa 2-read_file funksiyasını çağırırıq
-      countStudents(dbPath);
-      res.end();
+      const data = await countStudents(db);
+      res.end(data);
     } catch (err) {
       res.end(err.message);
     }
-  } else {
-    res.statusCode = 404;
-    res.end('Not Found');
   }
 });
 
